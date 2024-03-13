@@ -55,23 +55,16 @@ app.use(express.urlencoded({ extended: false }))
 // })
 
 app.post("/upload", upload.single("video"), async (req, res) => {
-    console.log(req.body)
     console.log(req.file)
     if (req.file?.path) {
         try {
             const response = await uploadOnCloudinary(req.file?.path)
             if (response) {
                 const videoInserted = await Video.create({ videoUrl: response.secure_url })
-                return res.status(201).json({
-                    success: true,
-                    data: {
-                        successCode: 201,
-                        message: "video uploaded successfully"
-                    }
-                })
+                fs.unlinkSync(req.file?.path)
+                return res.redirect('http://localhost:5173')
             }
         } catch (error) {
-            console.log(error)
             return res.status(500).json({
                 success: false,
                 data: {
@@ -86,7 +79,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
         success: false,
         data: {
             successCode: 500,
-            message: error || "Internal server error"
+            message: "Internal server error"
         }
     })
 })
@@ -101,7 +94,7 @@ app.get("/video", async (req, res) => {
                 data: {
                     successCode: 200,
                     message: "video fetched successfully",
-                    video: video
+                    video: video[0]
                 }
             })
         }
