@@ -4,12 +4,15 @@ const fs = require("fs")
 const dotenv = require("dotenv")
 const { upload } = require("./middleware/multer.middleware.js")
 const { uploadOnCloudinary } = require("./utils/cloudinary.js")
+const { Video } = require("./models/video.model.js")
+const { connectToDb } = require("./db/dbConfig.js")
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 8080
 
+connectToDb()
 app.use(cors())
 // it handles form data
 app.use(express.urlencoded({ extended: false }))
@@ -57,8 +60,8 @@ app.post("/upload", upload.single("video"), async (req, res) => {
     if (req.file?.path) {
         try {
             const response = await uploadOnCloudinary(req.file?.path)
-            console.log('response', response)
             if (response) {
+                const videoInserted = await Video.create({ videoUrl: response.secure_url })
                 return res.status(201).json({
                     success: true,
                     data: {
