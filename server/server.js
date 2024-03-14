@@ -62,7 +62,14 @@ app.post("/upload", upload.single("video"), async (req, res) => {
             if (response) {
                 const videoInserted = await Video.create({ videoUrl: response.secure_url })
                 fs.unlinkSync(req.file?.path)
-                return res.redirect('http://localhost:5173')
+                // return res.redirect('http://localhost:5173')
+                return res.status(201).json({
+                    success: true,
+                    data: {
+                        statusCode: 201,
+                        message: "video uploaded successfully"
+                    }
+                })
             }
         } catch (error) {
             return res.status(500).json({
